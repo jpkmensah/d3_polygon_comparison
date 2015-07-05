@@ -1,0 +1,27 @@
+h1 {
+  font-family:Helvetica;
+  font-size:1.1em;
+  color:purple;
+}
+
+p {
+  font-family:Helvetica;
+  font-size:0.9em;
+}
+
+.ball {
+  fill:rgba(255,0,0,0.75);
+  stroke:blue;
+  stroke-width:3px;
+}
+
+svg text {
+  font-family:Helvetica;
+  font-size:0.5em;
+  color:grey;
+}
+
+form {
+  font-family:Helvetica;
+  font-size:0.9em;
+}

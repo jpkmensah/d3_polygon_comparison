@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="d3/d3.js"></script>
+    <title>D3 Polygon by Joshua Mensah</title>
+  </head>
+  <body>
+  <h1>Head to Head Attributes Comparison Polygon</h1>
+  <p>Click here to generate random data</p>
+
+  <form id="num_attr">
+    Number of attributes: <input type="number" id="attributes" value="5" min="2" max="5000">
+        <input type="button" onclick="changeAttributes()" value="Submit">
+  </form>
+  <form id="num_comp">
+    Number of comparisons: <input type="number" id="comparisons" value="2" min="1" max="3">
+        <input type="button" onclick="changeComparisons()" value="Submit">
+  </form>
+
+    <script type="text/javascript">
+      var learnd = {};
+      learnd.svgw = 300;
+      learnd.svgh = 300;
+      learnd.dataset = [];
+      learnd.num_attributes = 5;
+      learnd.num_polygons = 2;
+      learnd.base_data = [];
+
+      learnd.centerpointx = 150;
+      learnd.centerpointy = 120;
+      learnd.label_padding = 5;
+
+      learnd.max_value = 100;
+
+      learnd.scale = d3.scale.linear()
+                              .domain([1,10])
+                              .range([0,learnd.max_value]);
+      learnd.color = d3.scale.category10();
+
+      learnd.svg = d3.select("body")
+        .append("svg")
+        .attr("width", learnd.svgw)
+        .attr("height", learnd.svgh);
+
+      function setBaseData() {
+        learnd.base_data = [];
+        for(var x = 0; x < learnd.num_attributes; x++) {
+          learnd.base_data.push(10);
+        }
+      };
+
+      function generateRandomData() {
+        learnd.dataset = [];
+        for(var i = 0; i<learnd.num_polygons; i++) {
+          learnd.tmp_arr = [];
+          for(var j = 0; j<learnd.base_data.length; j++){
+            learnd.tmp_arr.push(Math.floor((Math.random() * 10) + 1))
+          }
+          learnd.dataset.push(learnd.tmp_arr);
+        }
+      };
+
+      function getPolygonX(n,i,r,centerx){
+        return centerx + (r * Math.sin((2*Math.PI*i/n)));
+      }
+
+      function getPolygonY(n,i,r,centery){
+        return centery + (r * Math.cos((2*Math.PI*i/n)));
+      }
+
+      learnd.lineFunction = d3.svg.line()
+        .x(function(d,i) {
+          return getPolygonX(learnd.base_data.length
+                              ,i
+                              ,learnd.scale(d)
+                              ,learnd.centerpointx);
+        })
+        .y(function(d,i) {
+          return getPolygonY(learnd.base_data.length
+                              ,i
+                              ,learnd.scale(d)
+                              ,learnd.centerpointy);
+        })
+        .interpolate("linear-closed");
+
+      function drawBasePolygon(){
+        learnd.polyBase = learnd.svg.append("path")
+          .attr({
+            d: learnd.lineFunction(learnd.base_data),
+            fill: "rgba(10,10,10,0.1)",
+            stroke: "rgba(10,10,10,0.2)",
+            "stroke-width": "2px"
+          });
+      };
+
+      function drawLabelText() {
+        for(var k=0; k< learnd.num_attributes;k++){
+          learnd.baselabels = [];
+          learnd.baseLabels = learnd.svg.append("text")
+            .attr({
+              id:"Label_Text",
+              x:getPolygonX(learnd.num_attributes
+                      ,k
+                      ,learnd.max_value+learnd.label_padding+3
+                      ,learnd.centerpointx-learnd.label_padding),
+              y:getPolygonY(learnd.num_attributes
+                      ,k
+                      ,learnd.max_value+learnd.label_padding+3
+                      ,learnd.centerpointy+learnd.label_padding)
+            })
+            .text(
+              function(){
+                return k+1;
+              }
+            );
+        }
+      }
+
+      function drawPolygons(){
+        learnd.polyData =[];
+        for( var m = 0; m < learnd.dataset.length; m++ ){
+          learnd.polyData[m] = learnd.svg.append("path")
+            .attr({
+              d: learnd.lineFunction(learnd.dataset[m]),
+              fill: learnd.color(m),
+              stroke: learnd.color(m),
+              "fill-opacity":0.3,
+              "stroke-opacity":1,
+              "stroke-width": "2px"
+            });
+        }
+      };
+
+      function updateBasePolygon(){
+        learnd.polyBase.attr({
+                d: learnd.lineFunction(learnd.base_data),
+                fill: "rgba(10,10,10,0.1)",
+                stroke: "rgba(10,10,10,0.2)",
+                "stroke-width": "2px"
+              });
+      };
+
+      function updatePolygons(){
+        for( var m = 0; m < learnd.dataset.length; m++ ){
+          learnd.polyData[m]
+                  .transition()
+                  .duration(400)
+                  .attr({
+                    d: learnd.lineFunction(learnd.dataset[m])
+            });
+        }
+      };
+
+      function clearLabelText(){
+        d3.selectAll("text").remove();
+      };
+
+      function clearPolygons(){
+        d3.selectAll("path").remove();
+      };
+
+      function changeAttributes(){
+        learnd.num_attributes = document.getElementById("attributes").value;
+        setBaseData();
+        updateBasePolygon();
+        clearLabelText();
+        drawLabelText();
+        generateRandomData();
+        updatePolygons();
+      };
+
+      function changeComparisons(){
+        learnd.num_polygons = document.getElementById("comparisons").value;
+        clearPolygons();
+        drawBasePolygon();
+        generateRandomData();
+        drawPolygons();
+      };
+
+      setBaseData();
+      generateRandomData();
+      drawBasePolygon();
+      drawLabelText();
+      drawPolygons();
+
+      d3.select("p")
+        .on("click", function() {
+          generateRandomData();
+          updatePolygons();
+        });
+
+    </script>
+  </body>
+</html>
